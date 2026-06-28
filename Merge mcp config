@@ -1,0 +1,34 @@
+#!/usr/bin/env node
+// Merges the tradingview MCP server entry into an existing .mcp.json
+// without overwriting any other servers already registered there.
+
+const fs = require('fs');
+
+const [, , configPath, serverPath] = process.argv;
+if (!configPath || !serverPath) {
+  console.error('Usage: node merge_mcp_config.js <configPath> <serverPath>');
+  process.exit(1);
+}
+
+let config = { mcpServers: {} };
+
+if (fs.existsSync(configPath)) {
+  try {
+    const raw = fs.readFileSync(configPath, 'utf8').trim();
+    config = raw ? JSON.parse(raw) : { mcpServers: {} };
+  } catch (e) {
+    console.error(`Could not parse existing ${configPath}: ${e.message}`);
+    console.error('Fix or remove the file manually, then re-run setup.');
+    process.exit(1);
+  }
+}
+
+if (!config.mcpServers) config.mcpServers = {};
+
+config.mcpServers.tradingview = {
+  command: 'node',
+  args: [serverPath],
+};
+
+fs.writeFileSync(configPath, JSON.stringify(config, null, 2) + '\n');
+console.log(`Updated ${configPath} — "tradingview" server registered, existing entries preserved.`);
