@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+# TradingView MCP — Automated Setup
+# Run this LOCALLY on the machine that has TradingView Desktop + Claude Code installed.
+# It does NOT run inside a cloud sandbox — it needs your real filesystem and apps.
+#
+# Usage:
+#   chmod +x setup_tradingview_mcp.sh
+#   ./setup_tradingview_mcp.sh
+
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_DIR="$HOME/tradingview-mcp"
+MCP_CONFIG="$HOME/.claude/.mcp.json"
+RULES_FILE="$REPO_DIR/rules.json"
+
+echo "================================================"
+echo " Step 1/4 — Install or update the MCP server"
+echo "================================================"
+if [ -d "$REPO_DIR/.git" ]; then
+  echo "Existing install found at $REPO_DIR — pulling latest changes..."
+  git -C "$REPO_DIR" pull
+else
+  git clone https://github.com/tradesdontlie/tradingview-mcp.git "$REPO_DIR"
+fi
+cd "$REPO_DIR"
+npm install
+
+echo
+echo "================================================"
+echo " Step 2/4 — Register the MCP server"
+echo "================================================"
+mkdir -p "$(dirname "$MCP_CONFIG")"
+node "$SCRIPT_DIR/merge_mcp_config.js" "$MCP_CONFIG" "$REPO_DIR/src/server.js"
+
+echo
+echo "================================================"
+echo " Step 3/4 — Write your trading rules framework"
+echo "================================================"
+if [ -f "$RULES_FILE" ]; then
+  echo "rules.json already exists at $RULES_FILE — leaving it untouched."
+  echo "(Delete it and re-run this script if you want it regenerated from the template.)"
+else
+  cp "$SCRIPT_DIR/rules.template.json" "$RULES_FILE"
+  echo "Created $RULES_FILE from template."
+  echo "It contains <<PLACEHOLDER>> fields — fill in your real account size,"
+  echo "risk %, watchlist, and preferences before Claude uses it for real trade setups."
+fi
+
+echo
+echo "================================================"
+echo " Step 4/4 — Launch TradingView with the debug port"
+echo "================================================"
+case "$(uname -s)" in
+  Darwin)
+    if [ -d "/Applications/TradingView.app" ]; then
+      open -a TradingView --args --remote-debugging-port=9222
+      echo "Launched TradingView Desktop with remote debugging on port 9222."
+    else
+      echo "TradingView.app not found in /Applications — launch it manually with:"
+      echo "  /Applications/TradingView.app/Contents/MacOS/TradingView --remote-debugging-port=9222"
+    fi
+    ;;
+  Linux)
+    echo "Launch TradingView Desktop manually with:"
+    echo "  <path-to-tradingview-binary> --remote-debugging-port=9222"
+    ;;
+  *)
+    echo "On Windows (run this part from PowerShell or cmd instead):"
+    echo "  \"%LOCALAPPDATA%\\TradingView\\TradingView.exe\" --remote-debugging-port=9222"
+    ;;
+esac
+
+echo
+echo "================================================"
+echo " Setup script finished. Next step:"
+echo "================================================"
+echo "1. Edit $RULES_FILE with your real personal trading details."
+echo "2. Open Claude Code (run 'claude' in a terminal) and run: tv_health_check"
+echo "   Confirm cdp_connected = true."
+echo "3. Start asking Claude things like:"
+echo "   \"Scan my watchlist and tell me which pairs have the cleanest setups right now.\""
