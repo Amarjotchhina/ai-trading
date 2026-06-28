@@ -1,0 +1,35 @@
+{
+  "account": {
+    "account_size_usd": "<<YOUR_ACCOUNT_SIZE e.g. 10000>>",
+    "base_currency": "<<YOUR_BASE_CURRENCY e.g. USD, INR>>"
+  },
+
+  "watchlist": {
+    "majors": ["BINANCE:BTCUSDT", "BINANCE:ETHUSDT", "BINANCE:SOLUSDT"],
+    "alts": ["<<YOUR_ALT_PAIRS e.g. BINANCE:LINKUSDT>>"],
+    "macro": ["CRYPTOCAP:TOTAL", "CRYPTOCAP:TOTAL3", "CRYPTOCAP:BTC.D"]
+  },
+
+  "timeframes_to_check": ["1W", "1D", "4H"],
+
+  "bias_criteria": {
+    "bullish": "Price above 50D EMA, RSI 45-70, higher highs and higher lows on 4H",
+    "bearish": "Price below 50D EMA, RSI below 45, lower highs and lower lows on 4H",
+    "neutral": "Price chopping around 50D EMA, RSI 40-60, no clear structure"
+  },
+
+  "risk_rules": {
+    "max_risk_per_trade": "<<YOUR_RISK_PERCENT e.g. 1%>> of portfolio",
+    "min_rr_ratio": 2,
+    "no_trades_during": ["major US CPI", "FOMC", "weekend thin liquidity"]
+  },
+
+  "indicators": ["RSI (14)", "MACD (12, 26, 9)", "50 EMA", "200 EMA", "Volume"],
+
+  "personal_preferences": {
+    "preferred_session_hours": "<<e.g. London + NY overlap only>>",
+    "max_concurrent_trades": "<<e.g. 3>>",
+    "instruments_to_avoid": "<<e.g. low-liquidity alts, leveraged tokens>>",
+    "notes": "<<anything else Claude should always factor in>>"
+  }
+}
